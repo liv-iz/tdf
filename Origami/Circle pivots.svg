@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 595.28 841.89">
+  <!-- Generator: Adobe Illustrator 29.7.1, SVG Export Plug-In . SVG Version: 2.1.1 Build 8)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #fff;
+      }
+
+      .st0, .st1, .st2, .st3 {
+        stroke-miterlimit: 10;
+      }
+
+      .st0, .st1, .st3 {
+        stroke: #000;
+      }
+
+      .st0, .st3 {
+        stroke-width: .07px;
+      }
+
+      .st1, .st2, .st3 {
+        fill: none;
+      }
+
+      .st2 {
+        stroke: #ed2024;
+      }
+    </style>
+  </defs>
+  <path class="st2" d="M368.42,80.17c41.25,6.81,72.72,42.65,72.72,85.83,0,48.05-38.95,87-87,87s-87-38.95-87-87c0-43.15,31.5-78.98,72.71-85.83"/>
+  <path class="st1" d="M368.42,80.17"/>
+  <path class="st1" d="M354.13,79"/>
+  <line class="st0" x1="354.13" y1="253" x2="354.13" y2="79"/>
+  <path class="st0" d="M444.04,167.85"/>
+  <line class="st0" x1="267.13" y1="166" x2="354.13" y2="166"/>
+  <circle class="st3" cx="354.13" cy="166" r="70.87"/>
+  <line class="st0" x1="354.13" y1="166" x2="441.13" y2="166"/>
+  <path class="st0" d="M339.46,80.56"/>
+  <polyline class="st2" points="339.84 80.17 353.98 65.73 368.42 80.17"/>
+  <path class="st2" d="M140.82,80.17c41.25,6.81,72.72,42.65,72.72,85.83,0,48.05-38.95,87-87,87s-87-38.95-87-87c0-43.15,31.5-78.98,72.71-85.83"/>
+  <path class="st1" d="M140.82,80.17"/>
+  <path class="st1" d="M126.54,79"/>
+  <line class="st0" x1="126.54" y1="253" x2="126.54" y2="79"/>
+  <path class="st0" d="M216.44,167.85"/>
+  <line class="st0" x1="39.54" y1="166" x2="126.54" y2="166"/>
+  <circle class="st3" cx="126.54" cy="166" r="70.87"/>
+  <line class="st0" x1="126.54" y1="166" x2="213.54" y2="166"/>
+  <path class="st0" d="M111.87,80.56"/>
+  <polyline class="st2" points="112.25 80.17 126.39 65.73 140.82 80.17"/>
+</svg>
