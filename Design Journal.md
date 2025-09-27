@@ -667,9 +667,22 @@ And an updated version that was a bit better: https://photos.app.goo.gl/DA3iuzSU
 
 So I made an adobe illustrator file with the dimensions I needed and laser cut some cardboard circles: ![alt text](./images/week%204/cardboardcirclelaser.png)
 
-And it worked! ![alt text](reverselinkagecardboardcircle.png)
+And it worked! ![alt text](./images/week%204/reverselinkagecardboardcircle.png)
 
-So I have my mechanism, now I need to figure out how to attach the paper. 
+However, the cardboard did not feel sturdy enough. So I laser cut the circles out of some scrap plywood in the makerspace. Upon doing this with two holes (one for the center axle and one for the BBQ stick that would hold the bar), I realised I also needed one for the stick that would hold the paper. I knew I needed two press fits and one clearance. I guesstimated the clearance and interference I would need and it worked! To make it more sturdy, in my final version, I also added some hot glue to the bars that would be holding the origami paper.
+
+The files for laser cutting are [here.](./Origami)
+
+Now it was time to focus on the electronics. I first connected all the components and got the servo moving when the PIR ssensed movement. 
+
+![alt text](./images/week%204/breadboardservopir.png)  
+
+I thought of pushing one of the attached vertical bars (sticks) with the servo arm using the sturdy attachment Chris showed me. However, this was causing the disk to elevate instead of rotate by pushing on its center axle. I hot glued two rods to the bar that connects the circles to create a cage within which the servo arm would stay. It would then be able to push the bar to and fro bu pushing these arms as it rotates. 
+
+You can see it working here: https://photos.app.goo.gl/Cx4i1QGkqZhgEaXG8
+
+The breadboard wasn't really serving much of a purpose so I decided to connect the PIR to the 3.3V pin of the arduino and the servo to the 5V directly. As a result, I didn't need a breadboard and my circuit worked 
+
 
 
 
