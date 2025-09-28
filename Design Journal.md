@@ -624,7 +624,7 @@ Although I am not super happy with the aesthetics, I did like the idea and maybe
  
 ## Emotive Origami
 
-### Semester Week 4
+### Semester Week 4 & 5
 
 こんにちは (konichiwa)!
 
@@ -681,7 +681,48 @@ I thought of pushing one of the attached vertical bars (sticks) with the servo a
 
 You can see it working here: https://photos.app.goo.gl/Cx4i1QGkqZhgEaXG8
 
-The breadboard wasn't really serving much of a purpose so I decided to connect the PIR to the 3.3V pin of the arduino and the servo to the 5V directly. As a result, I didn't need a breadboard and my circuit worked 
+The breadboard wasn't really serving much of a purpose so I decided to connect the PIR to the 3.3V pin of the arduino and the servo to the 5V directly. As a result, I didn't need a breadboard and my circuit worked perfectlly fine. 
+
+Here is a schematic of the circuit:
+![alt text](./images/week%204/circuitdiagram.png)
+
+And it built: https://photos.app.goo.gl/mDsg2ibBSGNfh8yU9
+
+I then cut up the foam board to make a housing, creating a 20cm x 20cm box. I placed the cardboard in there and attached the paper to it: https://photos.app.goo.gl/GfQ3UNMuHM62YLaU7 .
+
+The paper's fold, (even with an added slot in the back to aid folding) required too much force to fold and was not working reliably. I tried refolding it, making it smaller, making it larger etc. but the fold was just ot great for the level of rigidity of the vertical rods (aka BBQ sticks). 
+
+I ultimately determined (after discussing with my mechanical engineer boyfriend) folding it twice and making a double hinge would give it more leverage. So I tried doing that. Lo and behold, it worked. 
+
+Here are all my attempts and my first duoble hinge attempt in one picture:
+
+![alt text](./images/week%204/doublehinge.png)
+
+That actually worked! So I folded a new and fresh piece of paper and realised it looked a bit like a clam. I decided to lean into this idea and even made it its own plaque (https://photos.app.goo.gl/fHZ9rCn6Hv3iYyMv9).
+
+I made a lid for the paper to rest on, cut the sticks to size, and placed the paper on it. The hardest part was measuring the arc to cut it and the holes for the paper to sit on. For the arcs, I measured three different points on its path, cut a paper oversized and traced this onto the foam board.
+
+Here is the paper: https://photos.app.goo.gl/zWSZK1yEK5RFHnQW7
+
+And for the sticks, I coloured the ends with a sharpie, it tinted the paper where it had to fit into and I cut those holes in the origami shape. I then cut off the ends and ta-da! Final prototype done!
+
+I have genuinely never felt so excited at seeing this final product. It took a lot of frustration, excitedness, more frustration, and shock (get it? cause my clam is in shock.) but we got there!
+
+Here it is, working: https://photos.app.goo.gl/zDDhHoi3cZqeT4SU8
+
+I was so happy the system was self contained. I added Gaffers tape to the edges to make the ifnish a bit better (which it does so in a darker lighting).
+
+You can see the portfolio piece here: https://drive.google.com/file/d/1tJ1uN8y9slfYgF-QBYedBSq-EBCs4XFo/view?usp=sharing .
+
+Thank you for reading this far!
+
+I am both terrified and looking forward to the next project!
+
+
+
+
+
+
 
 
 
