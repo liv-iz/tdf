@@ -7,6 +7,7 @@ I have divided this into a few sections:
 2. [Laser Cutter](#laser-cutter)
 3. [3D Printing](#3d-printing)
 4. [Emotive Origami](#origami)
+5. [Expressive Mechanics](#expressive-mechanics)
 
 
  <div id="arduino"></div>
@@ -641,7 +642,7 @@ The videos of all the folds are here: https://photos.app.goo.gl/5wgLAN3LnwHTpZLM
 My favourite one was the one where it looks like the paper is surprised to see you: ![alt text](./images/week%204/playtest2.png)
 And my least favourite was me trying to pass part of the paper through a hole: ![alt text](./images/week%204/playtest1.png)
 
-On Friday, I went to the makerspace to talk to Chris and ask for help. I had a better idea of what to do but was struggling to figure out how to make the jump frfom theory to prototyping practice. Chris started showing me how to quick prototype and how you can create composite materials from things at home like string and superglue which together make a very strong attachment:
+On Friday, I went to the makerspace to talk to Chris and ask for help. I had a better idea of what to do but was struggling to figure out how to make the jump from theory to prototyping practice. Chris started showing me how to quick prototype and how you can create composite materials from things at home like string and superglue which together make a very strong attachment:
 
 ![alt text](./images/week%204/compositematerial.png)
 
@@ -718,11 +719,132 @@ Thank you for reading this far!
 
 I am both terrified and looking forward to the next project!
 
+ <div id="expressive-mechanics"></div>
+
+## Expressive Mechanics 
+
+Going forward, I am going to try restructuring my design journal to make it easier for you guys to mark (you guys being whoever is reading this). I will continue to take a friendly approach here and try to make it more fun and friendly than the portfolio pages (aka less professional)!
+
+### Week 6
+Total System Panic. I thought we were going to get a week or two to play with the esp32s and then do a project using those. Nevermind, I should have looked at the syllabus. Anyway, there is no use crying over spilled milk so in we go!
+
+We heard about this new project on Tuesday in class and that is when we started looking into p5.js.
+#### Electronics
+I spent this week understanding how the motor works and why we need the H-bridge, connecting those things, and getting the wires soldered to the motor. These articles were useful in this ordeal:
+
+* Sudhu's arduino tutorial: https://github.com/loopstick/ArduinoTutorial
+* https://digilent.com/blog/what-is-an-h-bridge/?srsltid=AfmBOoq8O3mvVgUnv4-zKr4GBJVSJXLV8vJmseLv44tYIk-pFneNw3t9
+* https://forum.arduino.cc/t/why-should-i-use-a-h-bridge/4772
+* https://learn.adafruit.com/adafruit-arduino-lesson-13-dc-motors/overview
+
+Soldered the wires to the motor: ![alt text](./images/week%206/solder_motor.png)
+
+So I connected all the wires and it did not work, sent Sudhu a message in panic, and it was because the shorting blocks were connceted. I read this on the github bubt thought it only applied to batteries (cells) for some reason. 
+
+My panic receipts:
+![alt text](./images/week%206/sudhu_panic_1.png)
+![alt text](./images/week%206/sudhu_panic_2.png)
+
+I tested it with Sudhu's head tilting code and it worked which was exciting to see: https://photos.app.goo.gl/rfFNqiWAqbWNS2t49
+
+#### Fabrication
+In the meanwhile, I was trying to think of something to do. I enjoyed the idea of having something that opens and closes so decided to go with this idea for this project as well. While trying to get inspiration for this, I came across this cuteness:
+![alt text](./images/week%206/ibm_TJ.png)
+
+This is TJ, the IBM box!
+
+I loved the simplicity of the face and wanted to do something like this. This was the ideation:
+![alt text](./images/week%206/ideation1.png)
+
+I also saw this article on how to use a crank and piston to convert rotational movement to linear movement: https://learn.birdbraintechnologies.com/hummingbirdduo/projects/laser-cut-mechanisms/laser-cut-mechanisms-cranks-with-pistons/
+
+With these two things, I knew what I wanted to do. But how to do it...
+
+I tried making the mechanism first and seeing if it would work. The guides being closed caused too much friction because i did not leave enough clearance. While speaking to Chris, he showed me how the guides could be almost like rails and I decided to go with that approach. He also told me how adding a slit to the press fits would help not crush the dowels and would still hold everything in place.
+
+Initial cardboard mechanism:
+![alt text](./images/week%206/cardboard1.png)
+![alt text](./images/week%206/cardboard2.png)
+![alt text](./images/week%206/cardboard%20guide.png)
+
+Chris and I communicating:
+![alt text](./images/week%206/chris1.png)
+![alt text](./images/week%206/chris2.png)
 
 
+With the new knowledge on the clamping, I made a size guide which was too thinly cut and a better guide version where I tested the different clearances to get the fits I wanted.
+
+Here they are:
+![alt text](./images/week%206/size_guide1.png)
+![alt text](./images/week%206/size_guide2.png)
+
+Made press fit and clamp washers/ end-stop: ![alt text](./images/week%206/end_stop.png)
+
+and cut my first plywood version of the box that would house everything. 
+
+### Week 7
+I was unable to get a picture of the first version of the box because when I went to sand it, the rotating belt sander and my finger had an encounter. The result? Urgent Care, pain, maybe no longer a fingerprint, and a lot of delays. This was so frustrating and painful, I cannot even explain it. The doctor said it will take 3 months to heal fully ( hopefully less).
+
+#### Fabrication
+Anyway, skip forward 2 days, I was able to laser print the components using plywood and got a really shoddy version working: https://photos.app.goo.gl/YgjakDU2g3b5LDsq6
+
+The crank (8cm diameter) was too big which meant a lot of clearance between the motor and the bottom of the box would be needed. I wanted the boxes to be 10 x 10 x 10 cm because I felt that all the coponents would fit in that space but would keep the design cute and small-ish. 
+
+Therefore, I reduced the crank size. The hole in the middle is where the 3d-printed adaptor goes and 
+
+the holes on the side were meant to give me more options on where I can place the dowel in case I wanted to shorten the second linkage. 
+
+Ta-da: ![alt text](./images/week%206/smaller_circle.png)
+
+To get it all glued together, I needed my boyfriend's help because i could not use my left hand at the time. He helped me sand the outside of the box as best he could and was my hot glue gun hand. I wasn't on it so I did not take as many pictures of the process as I would have wished, I am sorry.
+
+This is the guide working with the piston and crank: https://photos.app.goo.gl/pmzGDU4aGgAwMj5R7. 
+
+To allow enough clearance for the linkage to not hit the bottom of the box, I used foam board stacked to lift the motor up because the piece of wood I had put holes in to attach the motor was too thick for my screws and there was no way I was getting near a sander any time soon. 
+
+Although this worked, the piston was not strong enough to hold the top side of the box. I had made a housing for the piston top to fit into on the box (can be seen in my sketches with chris and on the bottom left side of this picture): 
+
+![alt text](./images/week%206/littlesquare.png)
+
+I glued the piston onto the housing and the housing to the top box. WIth this fixed in place and more rigid, two pieces of wood were glued to the sides of the box on the back corners to guide the movement up and down. The connecting linkage was removed and ta-da, the most painful project in my history was done ( the mechanism that is).
+
+The new system: https://photos.app.goo.gl/nE4V77eVkuffKJxu8
+
+Also, I made a lil box with wire holes for the arduino and bridge: ![alt text](image.png)
+#### Electronics
+
+The electronics part was done from the previous week. I spent this week on the p5 code. 
+
+I wanted the box to move faster the more times the user opened and closed their mouth within a given time frame. 
+
+I mapped this from 0-255 but the issue was that anything below 85 was too little current to lift the box. Therefore, I mapped it between 85-255 and set it to 3 different buckets. If the person opened and closed their mouth once every second, it would send 85 as the motor speed to the arduino, 2 would be 170 and 3 would be 255. This worked but the code had the lips as 2 green dots which was not great user interaction.
+
+I found this awesome example online of the lip contour and decided a really extra and strong lip colour could be fun.
+
+The example: https://editor.p5js.org/ima_ml/sketches/8xB4wpH16
+
+You can see this in my second and final p5 version of the code. 
+
+Additionally, when showing my partner, he did not like how it was in discrete buckets, he said it made the movement too finisky and not smooth. I agreed, in pain because I thought I was done with the code by then, and this meant editing again. 
+
+The issue with making it a continuous mapping is that I had to add two distinct statements. One for if the user's mouth was not moving and a second statement for any movement to map between 85 and 255. I set the max openings to 6 per second which would map to 255.
+
+Essentially this is what the code does:
+
+1. Loads a pre-trained machine learning model from ml5.js called faceMesh, which is specifically designed to find and map human faces.
+2. Activates webcam and feeds the live video into faceMesh model.
+3. In real-time, model scans each frame of the video to locate the face and identifies 478 specific points (landmarks) on it. These points outline the eyes, eyebrows, nose, and lips with decently high precision.
+4. I focus on two landmarks: one on the upper inner lip (keypoint 13) and one on the lower inner lip (keypoint 14). It constantly calculates the pixel distance between these two points (this was tuned manually - the best distance for speech that can see  minor movements were 2 pixels (1 was too unreliable and would sometimes trigger with no movement)). So essentially, 1 pixel + 1 pixel as error-correction.
+5. If the calculated distance becomes greater than the MOUTH_OPEN_THRESHOLD (the pixels), the code registers that the mouth has opened and increases a counter. It only counts the transition from closed to open, so holding your mouth open doesn't add to the count.
+6. To show what it's tracking, the code uses two detailed lists of lip landmarks (lipsExterior and lipsInterior) to draw a colored, filled-in shape that perfectly outlines the user's lips on the screen (taking inspiration from the example code above).
+
+Here is a flowchart of the code as my diagram requirement:
 
 
+Whenever I encountered bugs that I just could not figure out, I used gemini. A lot of the code is a frankenstein of Sudhu's example code and the code I found online for the lip tracking.
+![alt text](<images/week 6/Notes/Notes - page 9.svg>)
 
+Here is the final video demonstrating everything working in unison: https://photos.app.goo.gl/L4ytnDgEWUCuHFq38 !
 
 
 
