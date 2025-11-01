@@ -977,7 +977,7 @@ So next up, I had to get the api to give me the info I needed. So the library ha
 ### Week 10
 #### Fabrication
 #### Electronics 
-One week left- scary. So I knew I would have to have a control loop going in order to make my set up work. I would have a target speed and have to match the pwm to that. But as we know, motors are not perfect and so variation is to be expected. Therefore, I had to get a control loop. To do that I had to figure out my gearing ratio (1:75) because the box I had was not accurate (it said 1000:1 and 12 counts per rotationn on the encoder). Experimentally, I found that it was actually 6 counts per rotation and that the gearing ratio was 1:70/80. Looking on their website, they only do 1:75 so that was it! And it wouuld clock 6 encoder counts per rotation. Conclusion? We had a 6 count encoder on a 1:75 motor. Therefore, in order to reach 100 rotations (which would inform the gearing ration Nikhilesh would make), the encoder would have to count 45000 times. The 
+One week left- scary. So I knew I would have to have a control loop going in order to make my set up work. I would have a target speed and have to match the pwm to that. But as we know, motors are not perfect and so variation is to be expected. Therefore, I had to get a control loop. To do that I had to figure out my gearing ratio (1:75) because the box I had was not accurate (it said 1000:1 and 12 counts per rotationn on the encoder). Experimentally, I found that it was actually 6 counts per rotation and that the gearing ratio was between 1:70  and 1:80. Looking on their website, they only do 1:75 so that was it! And it wouuld clock 6 encoder counts per rotation. Conclusion? We had a 6 count encoder on a 1:75 motor. Therefore, in order to reach 100 rotations (which would inform the gearing ration Nikhilesh would make), the encoder would have to count 45000 times. The 
 
 So we know the motor needs to travel 45000 encoder counts in exactly the song's duration. But it can't just run at constant speed - if it did, any small error would accumulate. By the end of a 4-minute song, we might finish 10 seconds early or late. Therefore, we would need a dynamic target speed. The chosen way to do this was through a PID control system (thankfully I live with a mechanical engineer who was able to explain to me how the theory works and directed me to additional resources). You can learn all about it here: https://www.reddit.com/r/robotics/comments/ll765t/how_to_control_a_dc_motor_with_an_encoder_using/, https://www.vexforum.com/t/integrated-encoder-motor-pid-control/43563, https://smithcsrobot.weebly.com/uploads/6/0/9/5/60954939/pid_control_document.pdf.
 
@@ -1185,7 +1185,8 @@ So I had to use the ESP32's dual cores, having to move the slow, blocking Spotif
 
 Thankfully the internet has almost abything you need and we now have AI which is also super helpful in explaining things in different ways:
 
-```
+CEMINI RESPONSE ABOUT RUNNING TWO CORES
+------------------------------------------------------------------------------
 Of course\! This is a really cool feature of the ESP32, and it's totally understandable why it seems tricky.
 
 Think of your ESP32 as having **two brains (or "cores")** that can think at the exact same time.
@@ -1372,20 +1373,16 @@ If you run this, you'll see the counter increase cleanly, with Core 0 and Core 1
 
 This video provides a great visual explanation of how to get started with ESP32 dual-core programming. [ESP32 Dual Core Tutorial](https://www.youtube.com/watch?v=nNFhv5nyddw) This clip explains how to set up two tasks and shows them running on separate cores, which is a great starting point for what we discussed.
 
-```
+------------------------------------------------------------------------------
 
-This is the code which did not work [(the one without the two core situation):](<Project 3/ESP32/imma_cry/imma_cry.ino>)
+BACK TO ME:
+
+This is the code which did not work [(the one without the two core situation).](<Project 3/ESP32/imma_cry/imma_cry.ino>)
 
 
 Before diving into the two core situation, I tried giving the spotify opportunities to have errors (this is the grace period). Essentially, if we got an unsuccessful https response code, we could allow that to happen for 5 seconds before the motor stopped. This did not solve the blocking network issue so I had to accept that it was time for the dual core solution. I maintained this grace period though because it would help handle errors more gracefully. It did however mean that our code has approximately a 5 second delay once you pause the song and the time the structure stops moving. However, consider that the movement is slow enough that it is barely perceptible.
 
 So this would mean things would work. Nope. We still had to make the motor go down during the next song. We realized that we would not be able to reposition it at its starting position in less than one minute so the timer would have to open during a song and close during the next. However, once I started trying to get this code to work, I realized the esp32 was rebooting and completely bugging out. I was getting watchdog timer errors, corrupted stacks, and more. 
-
-You can see it here: 
-
-```
-
-```
 
 So I found out that what was happeninng was due to two main memory-related issues known as potentially stack overflow and heap fragmentation, both of which pointed to problems with the `SpotifyEsp32Modified` library’s memory usage (and to be fair, the library itself has this warning on the readme - see image below.) The stack overflow happened because the library required more stack memory than allocated for the Spotify task, causing the task to corrupt adjacent memory and freeze Core 0. This triggered the ESP32’s watchdog timer, which detected the unresponsive core and forced a reboot which caused the motor to stop. Even after increasing the stack size, the heap fragmentation issue was still an issue. The library’s heavy use of dynamic memory allocations fragmented the ESP32’s limited RAM over time, leaving insufficient contiguous memory for critical operations. So the API calls eventually stopped working (even though free memory seemed available, the largest contiguous block was too small for the library’s needs). Hence, the `SpotifyEsp32Modified` library was too resource-intensive for the ESP32 and the tasks i was asking it to perform. The debugginng of this is here: https://chat.mistral.ai/chat/3aa6435d-faff-42d9-8df8-00c242ed9682
 
@@ -1395,6 +1392,14 @@ I used mistral. I also followoed the library's recommendations, disabled unused 
 
 So ultmately, we used that code, changed  the partition scheme to large instead of default when uploading it to the esp32. Although this was not 100% successful and we only got the thing to move up to a specific encoder count, we were still able to get a song's length, pass it to the pid controller, and get the pololu to move the desired amount of times within that song length. 
 
-In the future, I would like to try this again with a different microcontroller and see if I could get it to work. Additionally, instead of doing position control based on time passed clculated by comparing the length of the song to when it started, I would like to get the song's progress in real time and adjust the control accordingly. Moreover, I would like to allow the user to pause and play the song and have the thing keep going. Finally, I would like to consider edge cases where the user skips a song halfway through for example But for now and given the time we had, I am very happy with the outcome and so amazed by how much I learned in such little time! t was scary and frustrating but in retrospect, I did learn a lot. 
+I made two flowcharts. 
 
-Anyway, now we get to think about the future
+One for all of the code:
+![alt text](<images/week 7/Untitled (76).png>)
+
+and one for the PID subprocess flowchart:
+![alt text](<images/week 7/Untitled (77).png>)
+
+In the future, I would like to try this again with a different microcontroller and see if I could get it to work. Additionally, instead of doing position control based on time passed clculated by comparing the length of the song to when it started, I would like to get the song's progress in real time and adjust the control accordingly. Moreover, I would like to allow the user to pause and play the song and have the thing keep going. Finally, I would like to consider edge cases where the user skips a song halfway through for example. But for now and given the time we had, I am very happy with the outcome and so amazed by how much I learned in such little time! t was scary and frustrating but in retrospect, I did learn a lot. 
+
+Thank you for going eith me through this journey. See you next time!
