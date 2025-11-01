@@ -846,8 +846,555 @@ Whenever I encountered bugs that I just could not figure out, I used gemini. A l
 
 Here is the final video demonstrating everything working in unison: https://photos.app.goo.gl/L4ytnDgEWUCuHFq38 !
 
+## Ambient Display
+Hello and welcome to sprint 3. This first week was more ideation, forming teams, and getting a hang of the esp32 and its inner workings. 
+### Week 8
+#### Fabrication
+Week 1, I found a partner, Nikhilesh and we started brainstorming ideas. We both liked the idea of lights but were more interested on making something purely mechanical. Regardless, I explored existing APIs, and we came up with some random ideas. We were both really interested in using google maps api but the more we fleshed out the ideas, we realized that the information it provided would be too critical for an ambient display in its pure form. So we shifted ideas. I checked out multiple different websites and repos to find out which apis would be cool to use. 
+
+Here is our first brainstorm:
+![alt text](<images/week 7/Notes/Notes - page 10.png>)
+![alt text](<images/week 7/Notes/Notes - page 11.png>)
+
+And our fleshed out google maps api idea that seemed too critical:
+![alt text](image.png)
 
 
+None of them really called my attention (and I must have gone through hundreds.) So we agreed to go home and each have more of a think on what we could do. The result, I was listening to music, trying to figure out which api could be cool and BAM it hit me... Spotify must have an api. And so it did! Great, which ideas could we think of this?
+
+So we brainstormed what the spotify api could do ambient-wise that could be nice.
+
+Here is that brainstorm:
+![alt text](<images/week 7/Notes/Notes - page 14.png>)
+
+![alt text](<images/week 7/WhatsApp Image 2025-10-18 at 00.14.11_b665942a.jpg>)
+
+![alt text](<images/week 7/WhatsApp Image 2025-10-18 at 00.18.39_988d84e8.jpg>)
+
+Great, we had a semi-fleshed out idea.
+
+Nikhilesh and I agreed that it would be important to think of a simple idea so we could make it the best we could. We thought the hourglass looking one would be appropriate. It would go up and down as the song played. Up for one song and back down in time for the next song. And repeat this cycle. This seemed simple enough (oh how wrong we were simplicity-wise).
+#### Electronics
+In the meantime, I tried familiarizing myself with the esp32.
+
+So as my finger was still in pain from the previous project, I got help with the soldering from a friend called Ryan who is an MEng student. Cannot take credit for that. 
+
+Got blink to work: https://photos.app.goo.gl/MH6CsjU3GPgxf3qDA
+
+Connected it to the api: https://photos.app.goo.gl/8RMir5wpGLaAEphx5
+
+And connected it to the api which required an api key: https://photos.app.goo.gl/mRcbt4f2a8mUfKsZ6
+
+So having done this, I felt like I could start thinking about the project. 
 
 
+As I was thinking about the project, I looked into the spotify authentication process. It was not going to be fun. 
 
+Basically, the maini issues are the complex authentication and heavy encryption required to communicate with the Spotify API. Instead of a simple, static API key, Spotify uses OAuth 2.0, which requires a web browser for login and a callback server to exchange codes for temporary access tokens which isdifficult to do on a microcontroller without a screen. Plus, all of this communication uses HTTPS (SSL/TLS) which is computationally expensive, and consumes a significant portion of the ESP32's RAM and processing power just to establish a secure connection (I thought that would be ok. It was not but we will get to that in a week).
+
+So as I was becoming disillusioned with my prospects, I did what was necessary - I performed a google search. Tough, I know. Well, my evening quickly turned around from sadness to  a success. SOMEONE HAD MADE A LIBRARY FOR THE SPOTUFY API FOR ESP32s: https://github.com/FinianLandes/SpotifyEsp32. FinianLandes, my hero (and the other 5 ocntributors too). That night I slept very very peacefully. This would be doable!
+
+
+### Week 9
+
+#### Fabrication
+#### Electronics
+New week, new me. So I found that library and decided to do the getting started steps. Due to the way Spotify authenticates, you need to know two different unique identifiers in order to get the third (the refresh token). 
+
+These are the instructions on how to do this in the spotifyesp32 library:
+```arduino
+1. Create a Spotify Application
+Go to the Spotify Developer Dashboard.
+Create a new application and copy your Client ID and Client Secret.
+Add the following redirect URI: https://spotifyesp32.vercel.app/api/spotify/callback
+Enable the Web API option.
+2. Example: Login without a saved refresh token
+#include <Arduino.h>
+#include <WiFi.h>
+#include "SpotifyEsp32.h"
+
+const char* SSID = "your_ssid";
+const char* PASSWORD = "your_password";
+const char* CLIENT_ID = "your_client_id";
+const char* CLIENT_SECRET = "your_client_secret";
+
+// Create an instance of the Spotify class (optional: specify retry count)
+Spotify sp(CLIENT_ID, CLIENT_SECRET);
+
+void setup() {
+ Serial.begin(115200);
+ connect_to_wifi();
+
+ // Optionally set custom scopes the available scopes are listed below
+ // sp.set_scopes("user-read-playback-state user-modify-playback-state");
+
+ sp.begin();
+ while (!sp.is_auth()) {
+     sp.handle_client(); // Required for receiving the authorization code
+ }
+
+ Serial.printf("Authenticated! Refresh token: %s\n", sp.get_user_tokens().refresh_token);
+}
+
+void loop() {
+ // Your code here
+}
+
+void connect_to_wifi() {
+ WiFi.begin(SSID, PASSWORD);
+ Serial.print("Connecting to WiFi...");
+ while (WiFi.status() != WL_CONNECTED) {
+     delay(1000);
+     Serial.print(".");
+ }
+ Serial.println("\nConnected to WiFi!");
+}
+```
+
+I had some trouble connecting to my wifi. I was using my hotspot so I could work on the project from anywhere but for some reason it was struggling to connect. Maybe my phone was on 5GHz. I'm not sure yet. But after about an hour of ensuring the password was right and eventually moving locations, my hotspot connected and I managed to get the refresh token: https://photos.app.goo.gl/KGWanpmCppfFGzKp9
+
+So I went and tested out the example code to get a song's artist and track name. And success! After tweaking things here and there, it worked! Here is the magic: https://photos.app.goo.gl/Dw9TambVuFxeQMD87
+
+Things were looking up at the moment, the library was working, great!
+
+So next up, trying to figure out the hardware that would work to get this to work. So we first thought a servo would be good - it knows it's position and it moves. However, due to its limited 180 degree movement, we would need too many gearing ratios to get the translation we wanted vertically. So what now? I asked Sudhu if we had any motors with encoders and he said no BUT I found one at home. So now I needed to understand how to connect it and how it worked. As we wanted the structure to go up and down and to change the pwm of the motor, we would need the L298N H-bridge. So we had the components but needed a JST 6 pin cable as the motor I had did not have one. Jacob's did not have the cable but Hesse Hall did. With all the components in hand, it was time to see if we could get the motor to run. Nikhilesh was still adamant we could do it with the servo so I tried it out. The codes are [here](<Project 3/ESP32/servo_esp32_sweep/servo_esp32_sweep.ino>) and [here](<Project 3/ESP32/servo_test_milliseconds/servo_test_milliseconds.ino>). 
+
+The servo: https://photos.app.goo.gl/HChSA4pq7HKiaYEE9
+
+![alt text](<images/week 7/servo_with_gear.png>)
+
+
+The servo movement would be jittery, it would move to specific locations but it would not be a super smoothh ride. Plus, we were not sure whether the torque would be enough to lift the system up. I personally thought it would not work and would be much more work than it was worth; especially considering the fact we had the pololu motor (this is what you will see me calling the motor with the encoder from now onwards.) 
+
+So I got it connected and moving: [code](<Project 3/ESP32/test_encoder_motor>) and here it is in all its glory: https://photos.app.goo.gl/9RnFy6rdxE3tJRqx7
+
+Beautiful: ![alt text](<images/week 7/motor_encoder_first_try.png>)
+
+Great. That was working but I accidentally connected it to the plug and my laptop simultaneously and some smoke happened. WHich is never good. I quickly disconnected everything. I went to Sudhu who told me to try blink. I did, the esp32 was working (yay). Tried the motor with the simple L298N H-bridge code (the library has the example). 
+
+So next up, I had to get the api to give me the info I needed. So the library has simplified functions to call different api endpoints but the issue was the information I needed was not in any of the simplified functions. So the next step was creating those simplified functions. I forked the repo and created an SpotifyEsp32Modified Library with the endpoints I needed. I created one function that would act as my single api call as to not pass the api call rate. Getting all the info from that call would solve an issue I encountered where I accidentally sent way too many calls in way too little time to the api. So I took the evening off after that, created the new endpoints and tested them the next morning. It was working! Here it is: [ta-da!](<Project 3/ESP32/get_song_duration_one_API_call>)
+
+### Week 10
+#### Fabrication
+#### Electronics 
+One week left- scary. So I knew I would have to have a control loop going in order to make my set up work. I would have a target speed and have to match the pwm to that. But as we know, motors are not perfect and so variation is to be expected. Therefore, I had to get a control loop. To do that I had to figure out my gearing ratio (1:75) because the box I had was not accurate (it said 1000:1 and 12 counts per rotationn on the encoder). Experimentally, I found that it was actually 6 counts per rotation and that the gearing ratio was 1:70/80. Looking on their website, they only do 1:75 so that was it! And it wouuld clock 6 encoder counts per rotation. Conclusion? We had a 6 count encoder on a 1:75 motor. Therefore, in order to reach 100 rotations (which would inform the gearing ration Nikhilesh would make), the encoder would have to count 45000 times. The 
+
+So we know the motor needs to travel 45000 encoder counts in exactly the song's duration. But it can't just run at constant speed - if it did, any small error would accumulate. By the end of a 4-minute song, we might finish 10 seconds early or late. Therefore, we would need a dynamic target speed. The chosen way to do this was through a PID control system (thankfully I live with a mechanical engineer who was able to explain to me how the theory works and directed me to additional resources). You can learn all about it here: https://www.reddit.com/r/robotics/comments/ll765t/how_to_control_a_dc_motor_with_an_encoder_using/, https://www.vexforum.com/t/integrated-encoder-motor-pid-control/43563, https://smithcsrobot.weebly.com/uploads/6/0/9/5/60954939/pid_control_document.pdf.
+
+Here is a quick overview of what it does:
+
+- The P-Term (Proportional):
+  - The P-term looks at the current error (target speed minus actual speed) and says respond proportionally to how wrong we are right now. In my code, Kp = 0.2 means "for every unit of error, apply 0.2 units of correction." If target is 100 and actual is 80, error is 20, and P contributes 4 to the output. This gives immediate response - the bigger the mistake, the stronger the correction.
+  - The issue is the P-term alone has a problem as it creates a steady-state error. Imagine we are constantly just below the target and never quite reaching it. The P-term alone can't eliminate this persistent offset because as you get close to the target, the error gets small, so the correction gets weak.
+- The I-Term (Integral):
+  - The I-term acts as the system's memory. It continuously adds up all past errors over time. So If we've been consistently running 2 units slow for the last 30 seconds, the I-term accumulates this and expresses that we need more baseline power.
+  - So the P-term responds to being slow right now, but the I-term learns we've been fighting this battle for a while, we need to increase the power even when our speed is close to target.
+  - We set Ki = 0.2 and included an anti-windup clamp at ±400. Without the clamp, if the motor physically can't go any faster (maybe we've hit a mechanical limit), the I-term would keep growing and gorwing trying to fix something that just can't be fixed. When we finally could move again, this huge accumulated value would cause a violent jerk. The clamp prevents this by limiting how much the I-term can contribute.
+- The D-Term (Derivative):
+  - The D-term looks at how fast the error is changing and dampens rapid movements. If our speed is increasing quickly toward the target, the D-term says that we are accelerating way too quickly and if we keep doing this, we will likely overshoot."
+  - This helped reduce some of the oscillation we saw at the start
+  - Kd = 0.001 is deliberately small because too much D-term makes the system sluggish and unresponsive. Our pololu needs quick response (hence strong P and I terms) with just a tiny bit of damping to prevent oscillation.
+
+- How they work together:
+
+  - Every 50 milliseconds, the controller:
+    - Calculates error (how far from target we are)
+    - P-term: Respond to this error proportionally
+    - I-term: Plus add in accumulated historical error
+    - D-term: But subtract a bit if we're changing too fast
+Sum all three and send the result to the motor
+
+In orde to find the values that worked for the motor, it required callibrating it through trial and error. The first term to callibrate was the P term. I asked Gemini to give me a simple control for the pololu:
+
+```arduino
+// --- PIN DEFINITIONS (Based on your table) ---
+const int ENA_PIN = 27; // Speed (PWM)
+const int IN1_PIN = 26; // Direction (A0)
+const int IN2_PIN = 25; // Direction (A1)
+
+const int ENCODER_A_PIN = 14; // Encoder Signal A (A2)
+const int ENCODER_B_PIN = 15; // Encoder Signal B (A3)
+
+
+// --- CONTROL VARIABLES (ADJUST THESE) ---
+// Set your desired speed in encoder counts per second
+float target_speed = 500.0; 
+
+// The motor will stop after reaching this total absolute count
+long max_count = 10000; 
+
+// Proportional Gain (Kp). This is the value you will "tune".
+// Start with a small value like 0.8 and increase it until the motor
+// holds its speed well without oscillating wildly.
+float Kp = 1.2;
+
+
+// --- GLOBAL VARIABLES (Internal use) ---
+// Volatile variables are used because they are modified inside an ISR (Interrupt Service Routine)
+volatile long encoder_count = 0;
+
+// For calculating speed
+long last_encoder_count = 0;
+unsigned long last_time = 0;
+float actual_speed = 0.0; // Calculated speed in counts per second
+
+// PWM properties for ESP32
+const int PWM_FREQ = 5000; // PWM frequency in Hz
+const int PWM_CHANNEL = 0;
+const int PWM_RESOLUTION = 8; // 8-bit resolution (0-255)
+
+
+// --- INTERRUPT SERVICE ROUTINE (ISR) ---
+// This function is called automatically every time ENCODER_A_PIN changes state
+// It must be as fast as possible. No delays or serial prints here!
+void IRAM_ATTR readEncoder() {
+  // Read the current state of the encoder pins
+  int b_state = digitalRead(ENCODER_B_PIN);
+  
+  // Basic quadrature decoding
+  // Determine direction based on the state of B when A changes
+  if (b_state > 0) {
+    encoder_count++; // Clockwise
+  } else {
+    encoder_count--; // Counter-clockwise
+  }
+}
+
+
+// --- SETUP ---
+void setup() {
+  Serial.begin(115200);
+
+  // Set pin modes
+  pinMode(IN1_PIN, OUTPUT);
+  pinMode(IN2_PIN, OUTPUT);
+  pinMode(ENCODER_A_PIN, INPUT_PULLUP);
+  pinMode(ENCODER_B_PIN, INPUT_PULLUP);
+
+  // Configure ESP32's LEDC for PWM signal on ENA pin
+  ledcSetup(PWM_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
+  ledcAttachPin(ENA_PIN, PWM_CHANNEL);
+
+  // Attach the interrupt to the encoder A pin
+  // It will call readEncoder() whenever the pin's state changes (RISING or FALLING)
+  attachInterrupt(digitalPinToInterrupt(ENCODER_A_PIN), readEncoder, CHANGE);
+  
+  // Record the starting time
+  last_time = millis();
+}
+
+
+// --- MAIN LOOP ---
+void loop() {
+  // Check if the motor has reached its maximum travel distance
+  if (abs(encoder_count) >= max_count) {
+    // Stop the motor
+    digitalWrite(IN1_PIN, LOW);
+    digitalWrite(IN2_PIN, LOW);
+    ledcWrite(PWM_CHANNEL, 0);
+
+    Serial.println("Max count reached. Motor stopped.");
+    
+    // Halt the program
+    while(1) {
+      delay(1000);
+    }
+  }
+
+  // We run the control logic on a fixed interval (e.g., every 50ms) for consistency
+  if (millis() - last_time >= 50) {
+    
+    // --- 1. Calculate Actual Speed ---
+    long current_count = encoder_count;
+    long delta_counts = current_count - last_encoder_count;
+    
+    // Calculate speed in counts per second
+    actual_speed = (float)delta_counts / ((millis() - last_time) / 1000.0);
+    
+    // Update variables for the next loop
+    last_encoder_count = current_count;
+    last_time = millis();
+    
+    // --- 2. Proportional Control Logic ---
+    // Calculate the error
+    float error = target_speed - actual_speed;
+    
+    // Calculate the motor output power. This is the "P" in P-controller.
+    int pwm_output = Kp * error;
+    
+    // --- 3. Drive the Motor ---
+    // Constrain the output to the valid PWM range (-255 to 255)
+    pwm_output = constrain(pwm_output, -255, 255);
+    
+    // Set motor direction and speed
+    if (pwm_output > 0) {
+      // Forward
+      digitalWrite(IN1_PIN, HIGH);
+      digitalWrite(IN2_PIN, LOW);
+    } else {
+      // Backward
+      digitalWrite(IN1_PIN, LOW);
+      digitalWrite(IN2_PIN, HIGH);
+    }
+    // Write the speed (power) to the motor driver
+    ledcWrite(PWM_CHANNEL, abs(pwm_output));
+    
+    // --- 4. Debugging Output ---
+    Serial.print("Target: ");
+    Serial.print(target_speed);
+    Serial.print(" | Actual: ");
+    Serial.print(actual_speed);
+    Serial.print(" | Count: ");
+    Serial.print(encoder_count);
+    Serial.print(" | PWM: ");
+    Serial.println(pwm_output);
+  }
+}
+```
+
+It gave me a P-control which basically only considers p-gain and this is not the most robust approach. So I requested specifically a simple PID loop, tested it, found it oscillated, and proceeded to debugusing gemini which was really helpful in understandng what the effect of different terms were. Additionally, it made me realize that we would need a min_pwm_start to overcome static forces. When the motor is at a complete halt, starting it may require more pwm than the song needs to run (you can see the code without the min pwm start and deadzone [here:](<Project 3/ESP32/PID_control_test_1/PID_control_test_1.ino>))
+
+ Through experiments, I found that at 50 pwm the motor still ran fine but below 70 pwm it would not start. So I also requested gemini to add these variables. SPEED_DEADZONE = 10 (counts per second) is a speed threshold and essentially checks whether the motor essentially stopped or barely moving? and will apply a startup boost essentially. 
+
+Here you can see the Ki being too low: 
+![alt text](<images/week 7/low Pi.png>)
+
+And the Kp and Kd being too high and causing crazy oscillations:
+![alt text](<images/week 7/high Kp and Kd.png>)
+
+Here you can see the chat:
+https://gemini.google.com/share/e92ad71c08c8
+
+After probably 10 hours of tuning, and figuring out the different variables I needed, and teh encoder count for 100 rotations, and all the small things that would make the loop run accurately, we had a working PID controller! And we found that the song could be comfortably between 1 and 6 mins long. More than 6 mins and the pwm would be too small for the motor to move. Less than 1 minute and the motor would speen too quickly, causing quite a bit of instability to the structure and making a lot of noise. 
+
+I tested it for 50 rotations, 100 rotations, and 200 rotations. With the time to callibrate I had, 100 was the most consistent and least oscillating code: [you can see it here](<Project 3/ESP32/motor_100_rotations_1_to_6min_song/motor_100_rotations_1_to_6min_song.ino>). And here is the code getting it to [get to a certain encoder value and stop:](<Project 3/ESP32/reach_certain_encoder_value_and_stop/reach_certain_encoder_value_and_stop.ino>).
+
+
+Having two working codes, you would think it would now be easy to get everything working together. You thought wrong (and so did I). Nope. No. Not at all.
+
+So I have the PID loop running every 50ms. This amount of time reduced the oscillation levels and kept the motor movement pretty stable. My spotify api was being called every second to avoid sending too many requests. 
+
+When combined, the issue was, the Spotify API call (get_current_playback) is a blocking network function, meaning it completely froze the ESP32's main processor for several seconds while it waited for a response over Wi-Fi. This freeze was stopping the 50ms motor control loop from running, causing insanely buggy behavior (the motor would move forward and backward to try and correct itself, it was super jittery and awful) and delayed the printed logs. 
+
+So the I made the only reasonable google search anyone could do:
+![alt text](<images/week 7/googlesearch.png>)
+
+AND THANKFULLY (another miracle), the esp32 has 2 cores. Bear in mind this wa T-4 until demo day and the panic was high. So I know nothing about parallelization and how to run tasks on different cores. All I know, is it can sometimes get a bit dangerous (thankfully the esp32 has some fail stops in place to avoid bad things from happening though).
+
+So I had to use the ESP32's dual cores, having to move the slow, blocking Spotify network task to Core 0, allowing it to wait as long as it needs, while leaving the high-frequency motor control and printing tasks to run uninterrupted on Core 1.
+
+Thankfully the internet has almost abything you need and we now have AI which is also super helpful in explaining things in different ways:
+
+```
+Of course\! This is a really cool feature of the ESP32, and it's totally understandable why it seems tricky.
+
+Think of your ESP32 as having **two brains (or "cores")** that can think at the exact same time.
+
+  * **Core 0**
+  * **Core 1**
+
+When you write a normal Arduino sketch, all your code—especially your main `void loop()`—runs on **Core 1** by default. Core 0 is mostly busy handling background stuff like Wi-Fi and Bluetooth.
+
+But what if you want to use that second brain (Core 0) to do something else, like blink an LED, while your main loop on Core 1 is busy doing complex math?
+
+You can\! You do it by creating a "Task."
+
+-----
+
+### 1\. How to Split Tasks and Run Two "Loops"
+
+A **task** is basically its own function that has its own infinite loop, just like your main `void loop()`. The ESP32 runs an operating system in the background called **FreeRTOS** that acts like a manager, deciding which task gets to run at any given moment.
+
+To run two loops, you:
+
+1.  Keep your normal `void loop()` as is. This will run on **Core 1**.
+2.  Create a *new* function that will be your *second* loop.
+3.  In your `void setup()`, you tell the ESP32 to "create a new task" using that new function and "pin" it to **Core 0**.
+
+Here’s what that looks like in code.
+
+```cpp
+// This is a handle, or "name," for our new task
+TaskHandle_t Task1; 
+
+// This is our SECOND loop. It will run on Core 0.
+void Task1code( void * pvParameters ){
+  Serial.print("Task 1 is running on core ");
+  Serial.println(xPortGetCoreID()); // This will print "0"
+
+  // Just like void loop(), a task needs its own infinite loop
+  for(;;){
+    // Do something forever on Core 0...
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(500);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(500);
+  } 
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  // This is the magic command!
+  // It creates our new task.
+  xTaskCreatePinnedToCore(
+      Task1code,    /* Function to implement the task */
+      "Task1",      /* Name of the task */
+      10000,        /* Stack size in words */
+      NULL,         /* Task input parameter */
+      1,            /* Priority of the task */
+      &Task1,       /* Task handle to keep track of it */
+      0);           /* Core to pin it to (0 or 1) */
+}
+
+// This is your MAIN loop. It will run on Core 1.
+void loop() {
+  Serial.print("Main loop is running on core ");
+  Serial.println(xPortGetCoreID()); // This will print "1"
+  delay(1000);
+  // Do other things forever on Core 1...
+}
+```
+
+Now, your ESP32 is running **two loops at the same time**:
+
+  * `loop()` is running on Core 1, printing to the Serial Monitor.
+  * `Task1code()` is running on Core 0, blinking the built-in LED.
+
+-----
+
+### 2\. How to Use Shared Variables (The Safe Way)
+
+This is the next big question. What if you have a variable, like a counter, that you want *both* tasks to be able to read and write to?
+
+**The Problem (A "Race Condition")**
+
+Imagine you have a shared variable `int counter = 0;`.
+
+1.  Core 0 reads the value of `counter` (it's 0).
+2.  Core 0 calculates `0 + 1` to get 1.
+3.  **AT THE EXACT SAME TIME**, Core 1 reads the value of `counter` (it's still 0, because Core 0 hasn't written its new value back yet).
+4.  Core 1 calculates `0 + 1` to get 1.
+5.  Core 0 writes its result (1) to `counter`.
+6.  Core 1 writes its result (1) to `counter`.
+
+You've added to the counter *twice*, but the value is only **1** instead of **2**. This is called a **race condition**, and it creates super weird, hard-to-find bugs.
+
+**The Solution (A "Mutex")**
+
+To fix this, you use something called a **Mutex** (which stands for **MUT**ual **EX**clusion).
+
+Think of a mutex as a **"talking stick"** or a **"restroom key."** There is only *one* key for the shared variable.
+
+  * If a task wants to use the variable, it must first **"take"** the key.
+  * If the key is already taken, the task must **wait** until the other task is done and returns it.
+  * Once the task is finished changing the variable, it **"gives"** the key back so another task can use it.
+
+This guarantees that only one core can touch the variable at a time.
+
+Here's how you'd add it to the code from before:
+
+```cpp
+#include <Arduino.h>
+
+// This is the "key" for our shared variable
+SemaphoreHandle_t mutex;
+
+// Our shared variable
+int sharedCounter = 0;
+
+TaskHandle_t Task1; 
+
+// Our second loop (Core 0)
+void Task1code( void * pvParameters ){
+  for(;;){
+    // Try to take the "key". Wait forever if it's not available.
+    if(xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
+      
+      // --- CRITICAL SECTION ---
+      // We have the key! It's safe to change the variable.
+      sharedCounter++;
+      Serial.print("Task 1 (Core 0) set counter to: ");
+      Serial.println(sharedCounter);
+      // --- END CRITICAL SECTION ---
+
+      // Give the "key" back so the other task can use it.
+      xSemaphoreGive(mutex);
+    }
+    delay(500); // Wait a bit
+  } 
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // Create the "key" (the mutex) before we start the tasks
+  mutex = xSemaphoreCreateMutex();
+
+  // Create and pin our task to Core 0
+  xTaskCreatePinnedToCore(
+      Task1code, "Task1", 10000, NULL, 1, &Task1, 0);
+}
+
+// Our main loop (Core 1)
+void loop() {
+  // Try to take the "key"
+  if(xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
+    
+    // --- CRITICAL SECTION ---
+    // We have the key! It's safe to change the variable.
+    sharedCounter++;
+    Serial.print("Main Loop (Core 1) set counter to: ");
+    Serial.println(sharedCounter);
+    // --- END CRITICAL SECTION ---
+    
+    // Give the "key" back
+    xSemaphoreGive(mutex);
+  }
+  delay(300); // Wait a bit
+}
+```
+
+If you run this, you'll see the counter increase cleanly, with Core 0 and Core 1 taking turns accessing it, and the number will never get corrupted.
+
+-----
+
+### 🚀 To sum it up:
+
+1.  **Split Tasks:** Use `xTaskCreatePinnedToCore()` in your `setup()` to create a new function (task) and "pin" it to Core 0.
+2.  **Run Two Loops:** Your main `void loop()` runs on Core 1, and your new task function runs its own `for(;;)` loop on Core 0.
+3.  **Share Variables:** Protect your shared global variables with a **mutex**.
+      * Create it: `mutex = xSemaphoreCreateMutex();`
+      * Lock it: `xSemaphoreTake(mutex, ...);`
+      * ...Safely change your variable here...
+      * Unlock it: `xSemaphoreGive(mutex);`
+
+This video provides a great visual explanation of how to get started with ESP32 dual-core programming. [ESP32 Dual Core Tutorial](https://www.youtube.com/watch?v=nNFhv5nyddw) This clip explains how to set up two tasks and shows them running on separate cores, which is a great starting point for what we discussed.
+
+```
+
+This is the code which did not work [(the one without the two core situation):](<Project 3/ESP32/imma_cry/imma_cry.ino>)
+
+
+Before diving into the two core situation, I tried giving the spotify opportunities to have errors (this is the grace period). Essentially, if we got an unsuccessful https response code, we could allow that to happen for 5 seconds before the motor stopped. This did not solve the blocking network issue so I had to accept that it was time for the dual core solution. I maintained this grace period though because it would help handle errors more gracefully. It did however mean that our code has approximately a 5 second delay once you pause the song and the time the structure stops moving. However, consider that the movement is slow enough that it is barely perceptible.
+
+So this would mean things would work. Nope. We still had to make the motor go down during the next song. We realized that we would not be able to reposition it at its starting position in less than one minute so the timer would have to open during a song and close during the next. However, once I started trying to get this code to work, I realized the esp32 was rebooting and completely bugging out. I was getting watchdog timer errors, corrupted stacks, and more. 
+
+You can see it here: 
+
+```
+
+```
+
+So I found out that what was happeninng was due to two main memory-related issues known as potentially stack overflow and heap fragmentation, both of which pointed to problems with the `SpotifyEsp32Modified` library’s memory usage (and to be fair, the library itself has this warning on the readme - see image below.) The stack overflow happened because the library required more stack memory than allocated for the Spotify task, causing the task to corrupt adjacent memory and freeze Core 0. This triggered the ESP32’s watchdog timer, which detected the unresponsive core and forced a reboot which caused the motor to stop. Even after increasing the stack size, the heap fragmentation issue was still an issue. The library’s heavy use of dynamic memory allocations fragmented the ESP32’s limited RAM over time, leaving insufficient contiguous memory for critical operations. So the API calls eventually stopped working (even though free memory seemed available, the largest contiguous block was too small for the library’s needs). Hence, the `SpotifyEsp32Modified` library was too resource-intensive for the ESP32 and the tasks i was asking it to perform. The debugginng of this is here: https://chat.mistral.ai/chat/3aa6435d-faff-42d9-8df8-00c242ed9682
+
+I used mistral. I also followoed the library's recommendations, disabled unused endpoints (I thought I was doing this already on the code but realized the #disable blocks of code had to be on the .h file of the library itself.) Anyway, even that did not solve the issue. At this point i had probably spent two days trying to fix the issue and realized it was probably a losing battle. Increasing the partition size on the arduino ide did help reduce the number of times I got the error but errors were still there. 
+
+![alt text](<images/week 7/readmeesp32library.png>)
+
+So ultmately, we used that code, changed  the partition scheme to large instead of default when uploading it to the esp32. Although this was not 100% successful and we only got the thing to move up to a specific encoder count, we were still able to get a song's length, pass it to the pid controller, and get the pololu to move the desired amount of times within that song length. 
+
+In the future, I would like to try this again with a different microcontroller and see if I could get it to work. Additionally, instead of doing position control based on time passed clculated by comparing the length of the song to when it started, I would like to get the song's progress in real time and adjust the control accordingly. Moreover, I would like to allow the user to pause and play the song and have the thing keep going. Finally, I would like to consider edge cases where the user skips a song halfway through for example But for now and given the time we had, I am very happy with the outcome and so amazed by how much I learned in such little time! t was scary and frustrating but in retrospect, I did learn a lot. 
+
+Anyway, now we get to think about the future
