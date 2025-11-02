@@ -874,6 +874,11 @@ Here is that brainstorm:
 Great, we had a semi-fleshed out idea.
 
 Nikhilesh and I agreed that it would be important to think of a simple idea so we could make it the best we could. We thought the hourglass looking one would be appropriate. It would go up and down as the song played. Up for one song and back down in time for the next song. And repeat this cycle. This seemed simple enough (oh how wrong we were simplicity-wise).
+
+As Nikhilesh very nicely put it:
+The Ambient Displays project should explore how data could be translated into subtle physical feedback through the lens of Calm Technology. Using the ESP32 microcontroller and live web API calls, we were tasked with creating a device that communicates information through gentle shifts in light, color, or movement. The focus was on designing interactions that stay at the edge of awareness—quietly informative, aesthetically balanced, and seamlessly integrated into everyday life.
+
+
 #### Electronics
 In the meantime, I tried familiarizing myself with the esp32.
 
@@ -898,6 +903,37 @@ So as I was becoming disillusioned with my prospects, I did what was necessary -
 ### Week 9
 
 #### Fabrication
+This week we split up into our respective tracks. Nikhilesh and I split the project into two. I focused on getting the electronics and Spotify API integration to work reliably, ensuring the ESP32 could pull real-time song data and translate it into output signals. Whlst Nikhilesh would integrate those electronics into the form factor.
+
+We further explored the idea, and thought of how lipsticks translate upward in linear motion through rotation. I knew Nikhilesh was excited to really dive deep into making reliable, detailed mechanics.
+
+In his other projects he had used the rack and pinion mechanism. However, for this device, the compact form factor we had envisioned required something more self-contained. The goal was to achieve smooth linear motion without taking up much space or requiring external alignment.
+
+After some research, he found a thread-based linear actuator, which converts rotational motion into linear movement through a screw mechanism (remember the lipstick?).He modeled and 3D-printed a small prototype to test its reliability, and it worked perfectly for our needs. He sent me this video that day: https://drive.google.com/file/d/1lRXTWjjKgw9yA4f-auUxu6yUOKmD-cqg/view?usp=sharing.
+
+With the proof of concept being done, he told me how many rotations we might neeed. But due to the way our electronics worked out, I instead asked him whether he would be able to translate the distance we wanted in 100 rotations of the motor's shaft. The happy news versus using the servo (you will learn more about our choice of motor in the electronics entry), was that the motor we used was much smaller and compact, which was good for the compact mechanism we were making. However, this meant he had to make 100 rotations become more or less 5 revolutions of the mechanism. Using the servo would have meant more gearing ratios as well so using the dc motor with an encoder would allow hopefully for a slightlly less complicated gearing system. Nevertheless, this was the first time Nikhilesh had to tackle such a complex gearing situation. 
+
+He was inspired by Chris’s class examples and YouTube (a true saviour throughout this project) references he had been following. The key was to break down the problem to find what he wanted to achieve which was a 20:1 ratio. To achieve this, he designed a three-stage gear system that connected the Pololu motor to the main mechanism (Motor Shaft → 10T₁ → 30T₁, then 10T₂ → 24T₂, then 10T₃ → 28T₃ (Output)). Each stage multiplied the reduction, allowing for the smooth, controlled motion that matched the pace we wanted for the device’s slow vertical growth.
+
+Gearing: 
+![alt text](<images/week 7/WhatsApp Image 2025-10-25 at 12.44.24_217eeb86.jpg>)
+
+The printing:
+![alt text](<images/week 7/IMG_2503.png>)
+
+I sent him the pololu engineering drawing so he could understand the dimension (he could measure the other components himself as we have duplicate kits but we only had 1 motor):
+![alt text](<images/week 7/ENGINEERDRAWING.png>)
+
+He did not include space for the breadboard but I was able to make the shared ground be on the H-bridge instead of the breadboard so we could get rid of it to preserve space.
+
+He made this beautiful render from the dimensions (with considerations for so many things, I was so impressed):
+![alt text](<images/week 7/WhatsApp Image 2025-10-26 at 11.18.52_75c99a4c.jpg>)
+
+More parts printing: ![alt text](<images/week 7/IMG_2439.png>)
+
+And here is his first test print with all the components: 
+![alt text](<images/week 7/WhatsApp Image 2025-10-27 at 12.54.46_8eff7a7b.jpg>)
+
 #### Electronics
 New week, new me. So I found that library and decided to do the getting started steps. Due to the way Spotify authenticates, you need to know two different unique identifiers in order to get the third (the refresh token). 
 
@@ -976,6 +1012,21 @@ So next up, I had to get the api to give me the info I needed. So the library ha
 
 ### Week 10
 #### Fabrication
+A lot of work done for one week so far, but a lot to go. Getting everything tested out together, and seeing if the system is translating the distance we expected it to. Thankfully, Nikhilesh gave it some wiggle room so it could run about 1.5 times and still work without breaking. 
+
+The bracket to hold the pololu was too big so we had to print one with tighter tolerances. Nikhilesh likes having more tolerance than needed generally, which is quite the opposite of me so it was an interesting comparison. 
+
+Here are all the components: ![alt text](<images/week 7/IMG_2556.png>).
+
+He built a final test bed to connect and verify all the electronic components would fit properly. Understanding the spatial and wiring needs of these components was key to his design for the enclosure. His goal was to fit everything efficiently into as few parts as possible while keeping it safe, organized, and easy to assemble. This part was the most time-consuming for him and the bprint of the bed assembly took around 7 hours I believe. The 3D-printed parts, tolerances, and gear assembly work exactly as he'd modeled them!!! So we had a working assembly, our electronics fit perfectly, the gears worked (yay).
+
+One of the personal challenges Nikhilesh set for this project was to build the prototype without using any glue. Every component was designed to snap-fit or screw together, allowing for complete modularity and easy repair. This approach demanded careful planning of tolerances and joints on his part, but resulted in a much cleaner and more flexible build. This was also useful during our final demo, as we could easily disassemble the device to explain its inner workings and highlight how each part contributed to the overall system.
+
+Here is our test of everything working!!!! :::: https://drive.google.com/file/d/1mCrReEmFCRngre6Z89knKuiZ2ub0eiRs/view?usp=sharing
+
+And here you can see the inner workings: https://drive.google.com/file/d/1eAZ5z_C_LQ_cuJr_7GpsOxkQvh2H7hfn/view?usp=sharing.
+
+
 #### Electronics 
 One week left- scary. So I knew I would have to have a control loop going in order to make my set up work. I would have a target speed and have to match the pwm to that. But as we know, motors are not perfect and so variation is to be expected. Therefore, I had to get a control loop. To do that I had to figure out my gearing ratio (1:75) because the box I had was not accurate (it said 1000:1 and 12 counts per rotationn on the encoder). Experimentally, I found that it was actually 6 counts per rotation and that the gearing ratio was between 1:70  and 1:80. Looking on their website, they only do 1:75 so that was it! And it wouuld clock 6 encoder counts per rotation. Conclusion? We had a 6 count encoder on a 1:75 motor. Therefore, in order to reach 100 rotations (which would inform the gearing ration Nikhilesh would make), the encoder would have to count 45000 times. The 
 
@@ -1414,4 +1465,6 @@ When spotify returns valid playback data and music is playing, the system checks
 
 In the future, I would like to try this again with a different microcontroller and see if I could get it to work. Additionally, instead of doing position control based on time passed clculated by comparing the length of the song to when it started, I would like to get the song's progress in real time and adjust the control accordingly. Moreover, I would like to allow the user to pause and play the song and have the thing keep going. Finally, I would like to consider edge cases where the user skips a song halfway through for example. But for now and given the time we had, I am very happy with the outcome and so amazed by how much I learned in such little time! t was scary and frustrating but in retrospect, I did learn a lot. 
 
-Thank you for going eith me through this journey. See you next time!
+Working with Nikhilesh was also amazing, he was considerate, communicative, and extremely focused. He is an amazing industrial designer and learning from him was the highlight of this project. I feel like I have come out of this with a deep appreciation for modularity and ensuring parts can be easily swapped out during testing. And only once the design is finalized, can we print out a fully permannent sheet -- avoiding long prints. This is something I will definitely think of moving forward!
+
+Thank you for going along with me through this journey. See you next time!
