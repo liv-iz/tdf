@@ -8,6 +8,7 @@ I have divided this into a few sections:
 3. [3D Printing](#3d-printing)
 4. [Emotive Origami](#origami)
 5. [Expressive Mechanics](#expressive-mechanics)
+6. [Ambient Display](#ambient-display)
 
 
  <div id="arduino"></div>
@@ -846,6 +847,8 @@ Whenever I encountered bugs that I just could not figure out, I used gemini. A l
 
 Here is the final video demonstrating everything working in unison: https://photos.app.goo.gl/L4ytnDgEWUCuHFq38 !
 
+ <div id="ambient-display"></div>
+ 
 ## Ambient Display
 Hello and welcome to sprint 3. This first week was more ideation, forming teams, and getting a hang of the esp32 and its inner workings. 
 ### Week 8
