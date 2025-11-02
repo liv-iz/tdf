@@ -1169,6 +1169,10 @@ After probably 10 hours of tuning, and figuring out the different variables I ne
 
 I tested it for 50 rotations, 100 rotations, and 200 rotations. With the time to callibrate I had, 100 was the most consistent and least oscillating code: [you can see it here](<Project 3/ESP32/motor_100_rotations_1_to_6min_song/motor_100_rotations_1_to_6min_song.ino>). And here is the code getting it to [get to a certain encoder value and stop:](<Project 3/ESP32/reach_certain_encoder_value_and_stop/reach_certain_encoder_value_and_stop.ino>).
 
+Some additional safety limits of the motor control:
+- If the encoder count reaches 45,000, stop immediately (journey complete)
+- If time remaining drops below 100ms, set target speed to zero (essentially finished)
+- These prevent erratic behavior at the very end of a song
 
 Having two working codes, you would think it would now be easy to get everything working together. You thought wrong (and so did I). Nope. No. Not at all.
 
@@ -1185,7 +1189,7 @@ So I had to use the ESP32's dual cores, having to move the slow, blocking Spotif
 
 Thankfully the internet has almost abything you need and we now have AI which is also super helpful in explaining things in different ways:
 
-CEMINI RESPONSE ABOUT RUNNING TWO CORES
+GEMINI RESPONSE ABOUT RUNNING TWO CORES
 ------------------------------------------------------------------------------
 Of course\! This is a really cool feature of the ESP32, and it's totally understandable why it seems tricky.
 
@@ -1399,6 +1403,14 @@ One for all of the code:
 
 and one for the PID subprocess flowchart:
 ![alt text](<images/week 7/Untitled (77).png>)
+
+
+So ultimately here are some other important things to note with the final code:
+
+Both cores need to share information but this creates a problem: what if Core 0 is writing new song information at the exact moment Core 1 is reading it? You'd get corrupted, nonsensical data. The solution is a mutex (mutual exclusion lock). Before either core reads or writes shared variables, it locks  the mutex, does its work, then unlockes the mutex. This ensures the cores never interfere with each other's data access. 
+
+When spotify returns valid playback data and music is playing, the system checks if it's a new song. If the track ID has changed, it resets everything: clears the encoder count, resets PID variables, records the song duration and start time, and activates the motor. As I mentioned briefly, Network and API errors happen and the code doesn't immediately stop the motor on a single failed check, it waits 5 mins (the grace period).
+
 
 In the future, I would like to try this again with a different microcontroller and see if I could get it to work. Additionally, instead of doing position control based on time passed clculated by comparing the length of the song to when it started, I would like to get the song's progress in real time and adjust the control accordingly. Moreover, I would like to allow the user to pause and play the song and have the thing keep going. Finally, I would like to consider edge cases where the user skips a song halfway through for example. But for now and given the time we had, I am very happy with the outcome and so amazed by how much I learned in such little time! t was scary and frustrating but in retrospect, I did learn a lot. 
 
