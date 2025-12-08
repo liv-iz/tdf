@@ -9,6 +9,7 @@ I have divided this into a few sections:
 4. [Emotive Origami](#origami)
 5. [Expressive Mechanics](#expressive-mechanics)
 6. [Ambient Display](#ambient-display)
+7. [Final Project](#final-project)
 
 
  <div id="arduino"></div>
@@ -1471,3 +1472,113 @@ In the future, I would like to try this again with a different microcontroller a
 Working with Nikhilesh was also amazing, he was considerate, communicative, and extremely focused. He is an amazing industrial designer and learning from him was the highlight of this project. I feel like I have come out of this with a deep appreciation for modularity and ensuring parts can be easily swapped out during testing. And only once the design is finalized, can we print out a fully permannent sheet -- avoiding long prints. This is something I will definitely think of moving forward!
 
 Thank you for going along with me through this journey. See you next time!
+
+ <div id="final-project"></div>
+
+ ## Final Project
+
+ ### Week 11
+
+This week is not split into fabrication and electronics but rather entry 1 and entry 2.
+
+#### Entry 1
+This week we had to propose a design and try to find teammates. I personally found this a very tough exercise. It felt like some people had already determined their groups and many did not go based on ideas but more on who they wanted to team up with - which is fair but meant that approaching people was fruitless based on their ideas. I would not encourage doing this again. Instead, I would recommend everyone submitting maybe a form of what they are interested in exploring and for the teaching team to group people based on this. However, I understand why you did it like this and am thankful for the intention. 
+
+Ok, that's some housekeeping done. 
+
+This was my poster:
+![alt text](./images/week%2010/poster1.png)
+
+The point was that I wanted to make something useful but simple enough that we could focus on making it functional, reliable, and pretty. 
+
+I found Ishani who wanted to make something that was also useful but was not super set on an idea.
+
+This was her poster:
+![alt text](./images/week%2010/image-23png)
+
+She wanted to create something useful as well and was not set on her idea.
+
+We invited Nikhilesh to join our team. He had 2 ideas he shared with us.
+
+Here they are:
+
+Idea 1:
+![alt](./images/week%2010/idea1.png)
+
+Idea 2:
+![alt](./images/week%2010/idea2.png)
+
+Ishani and I believed a functional proof-of-concept for idea 1 could be done and were quite interested in doing this. However, Nikhilesh was married to idea 2 which in my opinion is not as interesting or applicable. Moreover, tdf is more about structure than materials (again, in my opinion). He was kind enough to let Ishani and I explore this idea further and this is the direction we chose to go in.
+
+Here are some initial diagrams on how the system would work:
+![alt text](./images/week%2010/image-2.png)
+![alt text](./images/week%2010/image-4.png)
+![alt text](./images/week%2010/image-3.png)
+![alt text](./images/week%2010/image-5.png)
+![alt text](./images/week%2010/image-6.png)
+
+We created a proposal for this and submitted it. After meeting with Lauryn we felt confident we could pull this off. 
+
+
+#### Entry 2 
+
+So now we start exploring the more specifics of our project. I told Ishani I could get a headstart on the electronics to make sure our project was promising. 
+
+So I soldered and connected the IMU to my ESP32: ![alt text](<images/week 10/imu1.png>)
+
+And started playing around with it. My first step was to get values using the adafruit basic example.[The code is here](<Final Project/ESP32_0/test_IMU/test_IMU.ino>).
+
+Great, it was working!
+
+But the data is noisy and I'm not sure what to do with it. So I start researching IMUs and how to determnine falls and things like that. 
+
+I recognize that we are working in a cartesian coordinate system where I can determine my axes as x, y, and z. The IMU's accelerometer measures acceleration on those axes. When the device is stationary, the only acceleration it senses is the constant 1g vector of gravity. So we could use basic trigonometry on the x, y, and z readings to calculate the static tilt (which could be determined as roll and pitch - https://www.linearmotiontips.com/motion-basics-how-to-define-roll-pitch-and-yaw-for-linear-systems/) relative to down. A jolt, on the other hand, is a dynamic event where there is a sudden, high-magnitude spike in acceleration other than gravity, which we can detect by calculating the total magnitude of  acceleration (sqrt(x^2 + y^2 + z^2)) (https://forum.arduino.cc/t/mpu6050-single-acceleration/672499). 
+
+So my issue is that these two measurements interfere. So any jolt or linear movement will add noise to the accelerometer, making my tilt calculation unreliable. BUT, if I try to only use the gyroscope to track tilt changes, it will suffer from drift (https://electronics.stackexchange.com/questions/445787/what-actually-causes-gyroscope-drift-in-imu), where small, cumulative errors make the angle calculation "drift" away from reality over time.
+
+So great, we have determined the problem with the raw data. But how to fix this?
+
+Apparently, we must fuse the data from both sensors. And this is where filters come into the equation (figuratively and literally). The most common methods to do this are the Complementary Filter, Madgwick algorithm and the Kalman Filter (https://www.sagemotion.com/blog/how-does-imu-sensor-fusion-work).
+
+My understanding is that the complementary filter is a simple and fast and computationally cheap. It's essentially a weighted average that trusts the gyroscope for fast, short-term changes while using the accelerometer's gravity vector for slow, long-term correction. This effectively anchors the drifting gyro reading to the stable gravity reference.
+
+The Kalman Filter is more complex and statistically optimal. It's a predictive algorithm that builds a complete model of the system's state (e.g., its angle and angular velocity). It predicts the next state based on the gyro, then corrects that prediction using the accelerometer measurement. While highly accurate, it is more computationally intensive but it changes data to compensate for different innacuracies in the system.
+
+The Madgwick algorithm uses a quaternion-based approach to estimate the orientation of the object. And that is above my paygrade, as Sudhu would say.  But it basically trusts the gyro for rapid motion, but uses an optimization method called gradient descent to scorrect for error in orientation by suing accelerometer and magnetometer data, correcting for any drift. We do not have a magnotemeter.
+
+So, I reckon the complementary filter will be good enough for my application.
+
+Here are some sources that really helped me understand what was going on:
+- https://www.sagemotion.com/blog/how-does-imu-sensor-fusion-work
+- https://forum.arduino.cc/t/imu-complementary-filter-to-estimate-roll-angle/1237672
+- https://www.allaboutcircuits.com/uploads/articles/A_comparison_of_complementary_and_kalman_filtering.pdf
+- https://www.mathworks.com/help/fusion/ug/estimate-orientation-with-a-complementary-filter-and-imu-data.html
+- https://vanhunteradams.com/Pico/ReactionWheel/Complementary_Filters.html
+- https://pmc.ncbi.nlm.nih.gov/articles/PMC10305318/
+
+And, of course, someone had example code!!! We know this will be very useful. Here is the source info:
+Website: https://www.hibit.dev/posts/92/complementary-filter-and-relative-orientation-with-mpu6050
+GitHub code: https://github.com/hibit-dev/mpu6050/tree/master/src/complementary_filter
+
+### Week 12
+
+#### Fabrication
+
+#### Electronics. 
+So we had finally settled on our idea and had begun exploring the components. On Tuesday, I got my hands on an OLED display as we thought it would be nice to disclose to the driver what the issue was so they can try adjusting their driving. We also wanted an auditory alert (piezo buzzer) and a light alert (Red LED).
+
+I soldered the pins to the display and hooked it up to my circuit wwhich already contained an LED which I had connected prior to acquiring the screen. 
+
+Here is a video of the screen and LED working (thank you Adafruit for good documentation!): https://photos.app.goo.gl/ebM9ZSPZYSPkDHrE6.
+
+And I added the buzzer (but hadn't joined it with the rest of the code, I just wanted to test what it sounded like)... https://photos.app.goo.gl/vh4isdsM6hJpyG5r5.
+
+This week, Sudhu talked briefly about PCBs. I have been looking for a reason to make a PCB and got handed one on a silver platter. My Display situation requires a lot of different components which I had put on a breadboard. But this is a temporary, proototyping piece of equipment. Sure, it would be ok to use. But imagine how cool it would be if I got to make my own PCB! 
+
+I had seen students making PCBs before and knew they used KiCAD so I downloaded it instead of Fritzing.  I found it had a steep learning curve. At first I thought I needed a schematic in order to make a PCB but then discovered you could just make a PCB directly. While makking my schematic, I could not find footprints for many of the components I had which I found odd (how is there not a footprint already for an ESP32 feather v2). I looked online to try and find a library which did or something. Adafruit had their own schematics but these were in Eagle which is another paid software. I tried importing it but it woould delete all of my previous progress (I chose the components that where available and even made my own 8 pins on the board to represent the OLED screen). So I tried finding a way around. Could not. And proceeded to delete my preious work and try using the schematic imported from eagle. The issue was that I could not create pcb from the schematic with te imported file. I did not manage to. 
+
+Here was that design: ![alt text](./images/week%2010/schematiceagle.png).
+
+So I instead made this and tried making the pcb out of the schematic:![alt text](<images/week 10/schematicog.png>). 
+
+I was worried about the accuracy of the spacing of the pins on this drawing of the pcb. So i searched for the footprint for an oled screen. Finally, the ESP32 model I had, showed up. So I was able to use a footprint that even had outlines that matched the correct size of the hardware in real life. I also found these footprints for the other components on my board. Now I had accurate measurements. So I connected all my PCB components and was super happy, thinking that was it. So I went on Gemini and asked for feedback on my design. And before I could even check, I reaalized I had not accounted for the thickness ofthe milling tools. So I had to go back, download the tools file from the makerspace bcourses, upload them into fusion so I could see what was going on. And unsurprisingly, my lines had to be thicker. So I went back and edited all of it, edited the board setup so that the minimum clearance and line thickness reflected the tools available to me.
