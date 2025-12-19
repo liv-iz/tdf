@@ -1560,11 +1560,12 @@ And, of course, someone had example code!!! We know this will be very useful. He
 Website: https://www.hibit.dev/posts/92/complementary-filter-and-relative-orientation-with-mpu6050
 GitHub code: https://github.com/hibit-dev/mpu6050/tree/master/src/complementary_filter
 
+Here is a diagram of how the different danger motion detection systems work:
+![alt text](image-10.png)
+
 ### Week 12
 
-#### Fabrication
-
-#### Electronics. 
+#### Electronics 1
 So we had finally settled on our idea and had begun exploring the components. On Tuesday, I got my hands on an OLED display as we thought it would be nice to disclose to the driver what the issue was so they can try adjusting their driving. We also wanted an auditory alert (piezo buzzer) and a light alert (Red LED).
 
 I soldered the pins to the display and hooked it up to my circuit wwhich already contained an LED which I had connected prior to acquiring the screen. 
@@ -1581,4 +1582,115 @@ Here was that design: ![alt text](./images/week%2010/schematiceagle.png).
 
 So I instead made this and tried making the pcb out of the schematic:![alt text](<images/week 10/schematicog.png>). 
 
+#### Electronics 2
 I was worried about the accuracy of the spacing of the pins on this drawing of the pcb. So i searched for the footprint for an oled screen. Finally, the ESP32 model I had, showed up. So I was able to use a footprint that even had outlines that matched the correct size of the hardware in real life. I also found these footprints for the other components on my board. Now I had accurate measurements. So I connected all my PCB components and was super happy, thinking that was it. So I went on Gemini and asked for feedback on my design. And before I could even check, I reaalized I had not accounted for the thickness ofthe milling tools. So I had to go back, download the tools file from the makerspace bcourses, upload them into fusion so I could see what was going on. And unsurprisingly, my lines had to be thicker. So I went back and edited all of it, edited the board setup so that the minimum clearance and line thickness reflected the tools available to me.
+
+So I had the pcb layout but when I filled the ground plane, I saw there was an island (basicallly  an isolated piece of copper on a layer that isn't connected to the intended circuit):
+![alt text](/images/week%2010/pcb1.png)
+
+So I did some rerouting to fix that:
+
+![alt text](/images/week%2010/pcb2.png)
+
+
+I checked online how thick my traces should be given the current required by my different components, and also madee the power and ground lines thick. 
+
+### Week 13
+#### Fabrication & Electronics (a multi-day process so both entries are combined here)
+I was now ready to actually cut out the pcb on the machine. But going from kicad to the othermill was no easy feat.
+
+I had to understand the Design Rule Checks (DRC), discovering that without properly assigned Net Names, the software is unaware of short circuits, like a clearance issue I had between some traces. I realized that efficient milling requires software planning, such as implementing a Ground Fill with a specific 0.032" isolation to significantly reduce machining time and incorporating an antenna keep-out zone to make sure  my ESP32 actually works. 
+
+I began the process which turned out to be far more difficult than I anticipated because the milling machine hadn't been used in over a year and a half. I initially decided to use a ground plane in my design rather than connecting ground through specific traces, but when the first few attempts failed, the design specialist, Cody, thought the issue might be with my files. After redoing the files and trying again, we realized the problem was actually mechanical and the machine had a z-axis issue. 
+
+This resulted in a very frustrating two days where I broke three boards and one CNC bit before we eventually switched to a different CNC machine. Even then, the second machine's belt was broken and wasn't rotating, so we had to change the belts and get new bits just to get it operational. I also struggled with the double-sided sticky tape, which wasn't strong enough to hold the board during milling; I eventually had to source stronger tape from the shopbot CNC to keep the PCB in place.
+
+[entry 2]
+Day 1 and 2 had been pure troubleshooting so I came back hoping that the next day would be more successful. And it was!!!!!
+
+Once I finally successfully machined a piece that looked great, I hit a major realization regarding the physical assembly. I looked at the board and realized that if I tried to solder the components like the ESP32 and the buzzer casing directly onto the copper as I had planned, I would likely burn the components or be unable to reach the pins. This was the moment I finally understood what Sudhu had suggested about milling the back of the board. Since I was using a one-sided board (with copper only on one side), I had not understood what he meant. But what he meaant was that I needed to flip the traces so that the components could sit on the plastic side while their pins were soldered through to the copper side.
+
+However, even after this realization, the process required more iteration because of the software interface. Each round of milling took about 45 minutes, and at one point, I  flipped the traces on kicad but then also selected the back option in the software, which caused the software to flip the design again. This resulted in an exact replica of my first non-functional board. It was a long process of troubleshooting and learning, but after finally flipping the design only once, I successfully produced a functional PCB that was ready for assembly.
+
+This is my first round:
+![alt text](/images/week%2010/firstboard.png)
+Here is the non-functional machinee:
+https://photos.app.goo.gl/6z22tVEZqW5C23JM8
+the functional machine:
+https://photos.app.goo.gl/v9UodbyXCrzoc2Qr6
+me and the machine:
+https://photos.app.goo.gl/TbaN2DNemokBfAPf7
+
+and some more pictures because we need to appreciate theamount of work this took:
+
+![alt text](<images/week 10/IMG_1437.png>) ![alt text](<images/week 10/IMG_1446.png>) ![alt text](<images/week 10/IMG_1449.png>) ![alt text](<images/week 10/IMG_1452.png>) ![alt text](<images/week 10/IMG_1472.png>)
+
+### Week 14
+#### Electronics
+After I finally successfully milled the PCB, I moved directly into the assembly and programming phase. I had all my parts and components ready to go, and the first major task was soldering them onto the board,. During this process, I learned a very practical skill: using a solder pump to pull solder out, which I thought was a pretty cool and necessary technique for ensuring clean connections.
+
+Once the physical soldering was done, I had to ensure that the hardware and software were actually in sync. I quickly realized that while I was designing the PCB, I had routed a specific trace to a brand-new pin but had completely forgotten to update my code to reflect that change,. I had to spend time updating the code to make sure the different electronics were actually functional with the new physical layout.
+
+I also took the opportunity during this stage to make the hardware more efficient. Originally, I was using single-pin connections for my IMU, but I realized that I could use a 4-pin JST cable to connect the IMU to the ESP32 instead,. This was a significant improvement because it made the entire electronics assembly much more compact,. I had to write new code specifically to account for this updated connection method for the IMU and the rest of the assembly.
+
+Reflecting on this stage, I realized there were several ways I could have optimized the design. Since this was my first PCB, I was worried about passing traces under different components on the board, so I made the board larger than it strictly needed to be,. I now see that I could have made the final product even more compact if I had been more confident with the layout, but I suppose that is why you have to actually build these things to learn,.
+
+![alt text](<images/week 10/IMG_D68EB3F9-5BB7-48DE-B9AD-808B2D4A23B4.jpeg>)
+![alt text](<images/week 10/soldered.png>)
+
+Checking things iindividually: https://photos.app.goo.gl/2BphEpsSN7v16oax5,https://photos.app.goo.gl/FFCnYCDUQxc1RYVc9
+### Week 15
+#### Electronics
+ I had all my components working independently, but the real challenge was getting them to talk to each other. I decided to use the ESP Now protocol for this, which was actually easier to implement than I expected. I chose this protocol specifically because it does not require an external Wi-Fi connection, has a large range suitable for large trucks, and offers the low power and low latency needed to run the system on a battery. Since I had already found the MAC address for my ESP to connect to the Berkeley IoT Wi-Fi previously, it was very simple to use it again for this setup.
+I followed a step-by-step testing process, starting with the LED and then adding the buzzer. However, I had an issue when I integrated the OLED screen; the system began crashing. It took some time to figure out, but I eventually realized the crash was simply due to incorrect pin definitions. Once that was resolved, I was able to confirm that the entire system could run successfully on battery power.
+
+But then the unit once connected using ESP-NOW would crash and reboot endlessly upon receiving data. I discovered this was due to the ESP32’s architecture (thank you AI). ESP-NOW callbacks run in a high-priority interrupt context. My initial code attempted to update the OLED screen and trigger the buzzer directly inside this callback, which took too long and triggered the hardware Watchdog timer to reset the board.
+
+So in the end we ran a flag system To fix the crashing and boot loop. I  restructured the receiver code and separated the logic into two. First, the  callback function now does only one thing: it saves the incoming data to memory and sets a boolean flag (newAlertReceived = true). This operation takes microseconds, keeping the Watchdog happy. Second, the main loop(), which runs at a normal priority, checks this flag. When it sees the flag is raised, it performs the heavy lifting of drawing the graphics to the OLED screen and generating the PWM tone for the buzzer. This decoupling of reception from processing resulted in a stable, responsive dashboard unit that reliably warns the driver without freezing.
+
+The final part of this stage involved calibrating the IMU sensitivity. It was critical to adjust the settings so that the device wouldn't send a false alert just from the normal movements and vibrations of a car or truck. BUT I do not own a car so I had to guess a reasonable value. So if there is a tilt exceeding 25 degrees or a sudden acceleration shock greater than 15 m/s², the unit immediately broadcasts a structured data packet containing the event type and force magnitude to the alert unit.
+
+
+Because I had planned for this communication from the beginning and kept my code simple and concise, the integration to get the units to communicate was much smoother than I had anticipated.
+
+Here is a diagram made by gemini from my code explaining how the esp now communication works:
+![alt text](image-9.png)
+
+#### Fabrication
+
+While my Ishani worked on the enclosure for the alert unit, I was responsible for designing the housing for the IMU, which needed to attach securely to a shipping box. This was a particularly stressful period because of a team communication breakdown; I had originally thought the housing for both parts was being handled by her, so I had to rush to complete this in a very constrained timeframe. I went through six or seven different iterations before reaching a final design.
+
+My first idea was a 90-degree clamp, but I quickly realized it wouldn't be stable enough—it would have fallen off or caused vibration-induced errors in the IMU readings. I also tried a locking corner piece, but the print failed. Eventually, I decided that a complex mechanical clamp required too much human intervention, so I pivoted to a much simpler solution: double-sided sticky tape, which made the unit reusable and easy to stick on or take off.
+
+My first iteration showed that the compliant mechanism could work but the fingers that held the lid in place were too thin and just broke off so I made them thicker. I also realized the lid of the box would slide off as there were no end stops so I added this to the design.
+
+90 degree unsuccesful clamp: ![alt text](image-2.png)
+first lid with thin fingers and no end stop: ![alt text](image-4.png)
+box iteration: ![alt text](image-3.png)
+
+### Week 16
+#### Fabrication
+The design process for the box itself was full of trial and error. In my first cute little box iteration above, I was so stressed that I completely forgot to leave space for the battery, only accounting for the ESP32 and the IMU. 
+
+In the final stages, I initially made the box taller to fit the battery by stacking components, but after some feedback from Chris, I realized it needed to be as flat as possible for practical shipping. I redesigned the layout to place the components side-by-side instead. While the final version worked, I recognize that having pins already soldered onto my ESP and IMU prevented it from being even thinner, and the small battery I chose limited the device's use to shorter trips.
+
+Here are the larger box iterations: ![alt text](image-5.png)
+
+and the final one attached to a package: ![alt text](image-6.png) 
+
+#### Showcase
+
+The showcase turned out to be much more nerve-wracking than I had anticipated,. Looking back, I really wish I had spent more time practicing how to communicate our idea clearly to the audience, as I felt that the communication aspect of our presentation could have been improved.
+
+Despite those nerves, I was incredibly proud of what we built; it was very important to me to create a functional project rather than something that was just visual or artistic, and I was happy to see that come to fruition
+
+The showcase also provided a lot of inspiration for where this could go next. I received interesting feedback about abstracting the concept of transportation. While we focused on boxes and goods, the sensors could potentially be embedded in clothing or other unconventional areas. It also left me curious about the future of miniaturization, such as whether these sensors could eventually be embedded directly into packaging tape. There were things we didn't fully explore, like how sophisticated the units could become or how they might compare to professional units used in high-end robotics cases. Nevertheless, the experience was a success in proving the core concept and I definitely learned a lot!
+
+This was our table with all the prototypes: ![alt text](image-7.png)
+
+and an artistic picture of the amazing alert unit casing Ishani made:
+
+![alt text](image-8.png)
+
+ I learned a lot from her fabrication process. She had so many iterations and it was really impressive to see. I loved her use of magnets because it meant we could access the components super quickly to iterate and prototype. 
+
